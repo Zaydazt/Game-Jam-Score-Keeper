@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { RotateCcw, Trophy, AlertTriangle } from "lucide-react";
 import confetti from "canvas-confetti";
 import bgImage from "@assets/generated_images/dark_digital_hexagon_grid_background_texture.png";
-import { motion, useAnimation } from "framer-motion";
+import { motion, AnimatePresence, useAnimation } from "framer-motion";
 
 type GameState = "setup" | "playing" | "finished" | "exploded";
 
