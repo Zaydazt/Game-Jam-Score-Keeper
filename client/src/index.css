@@ -38,71 +38,154 @@
   --radius-sm: 0.2rem;
   --radius-md: 0.4rem;
   --radius-lg: 0.6rem;
+
+  --animate-scanline: scanline 8s linear infinite;
+  --animate-flicker: flicker 0.15s infinite;
+
+  @keyframes scanline {
+    0% { transform: translateY(-100%); }
+    100% { transform: translateY(100%); }
+  }
+
+  @keyframes flicker {
+    0% { opacity: 0.97; }
+    5% { opacity: 0.95; }
+    10% { opacity: 0.9; }
+    15% { opacity: 0.95; }
+    20% { opacity: 0.98; }
+    25% { opacity: 0.95; }
+    30% { opacity: 0.9; }
+    35% { opacity: 0.95; }
+    40% { opacity: 0.98; }
+    45% { opacity: 0.95; }
+    50% { opacity: 0.9; }
+    55% { opacity: 0.95; }
+    60% { opacity: 0.98; }
+    65% { opacity: 0.95; }
+    70% { opacity: 0.9; }
+    75% { opacity: 0.95; }
+    80% { opacity: 0.98; }
+    85% { opacity: 0.95; }
+    90% { opacity: 0.9; }
+    95% { opacity: 0.95; }
+    100% { opacity: 0.98; }
+  }
 }
 
 :root {
-  /* Dark Cyberpunk Theme Base */
-  --background: 240 30% 6%; /* Deep dark blue/black */
-  --foreground: 180 20% 90%; /* Off-white cyan tint */
+  --background: 240 30% 4%;
+  --foreground: 180 20% 95%;
 
-  --card: 240 25% 10%;
+  --card: 240 25% 8%;
   --card-foreground: 180 10% 90%;
 
   --popover: 240 25% 10%;
   --popover-foreground: 180 10% 90%;
 
-  --primary: 180 100% 50%; /* Neon Cyan */
-  --primary-foreground: 240 30% 10%;
+  --primary: 180 100% 50%;
+  --primary-foreground: 240 30% 5%;
 
-  --secondary: 300 100% 50%; /* Neon Pink */
-  --secondary-foreground: 240 30% 10%;
+  --secondary: 300 100% 55%;
+  --secondary-foreground: 240 30% 5%;
 
-  --muted: 240 20% 15%;
-  --muted-foreground: 240 10% 60%;
+  --muted: 240 20% 12%;
+  --muted-foreground: 240 10% 65%;
 
-  --accent: 60 100% 50%; /* Electric Yellow */
+  --accent: 60 100% 50%;
   --accent-foreground: 240 30% 10%;
 
   --destructive: 0 100% 60%;
   --destructive-foreground: 0 0% 100%;
 
-  --border: 240 20% 20%;
-  --input: 240 20% 20%;
+  --border: 240 20% 18%;
+  --input: 240 20% 18%;
   --ring: 180 100% 50%;
 
-  --radius: 0.5rem;
+  --radius: 0.75rem;
 }
 
 @layer base {
   * {
-    @apply border-border;
+    @apply border-border selection:bg-primary/30 selection:text-primary-foreground;
   }
   body {
-    @apply font-body antialiased bg-background text-foreground;
-    background-image: var(--bg-image);
-    background-size: cover;
-    background-position: center;
-    background-attachment: fixed;
+    @apply font-body antialiased bg-background text-foreground overflow-x-hidden;
+    background-color: hsl(var(--background));
+    position: relative;
   }
+  
+  /* CRT Scanline Overlay */
+  body::before {
+    content: " ";
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+    z-index: 1000;
+    background-size: 100% 2px, 3px 100%;
+    pointer-events: none;
+  }
+
+  body::after {
+    content: " ";
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    background: rgba(18, 16, 16, 0.1);
+    opacity: 0;
+    z-index: 1001;
+    pointer-events: none;
+    animation: flicker 0.15s infinite;
+  }
+
   h1, h2, h3, h4, h5, h6 {
-    @apply font-display tracking-wider;
+    @apply font-display tracking-tight;
   }
 }
 
-/* Custom Glitch Effect Utility */
 @layer utilities {
   .text-glow-primary {
-    text-shadow: 0 0 10px hsl(var(--primary) / 0.5), 0 0 20px hsl(var(--primary) / 0.3);
+    text-shadow: 0 0 12px hsl(var(--primary) / 0.6), 0 0 24px hsl(var(--primary) / 0.3);
   }
   .text-glow-secondary {
-    text-shadow: 0 0 10px hsl(var(--secondary) / 0.5), 0 0 20px hsl(var(--secondary) / 0.3);
+    text-shadow: 0 0 12px hsl(var(--secondary) / 0.6), 0 0 24px hsl(var(--secondary) / 0.3);
   }
+  .text-glow-accent {
+    text-shadow: 0 0 12px hsl(var(--accent) / 0.6), 0 0 24px hsl(var(--accent) / 0.3);
+  }
+  
   .box-glow {
-    box-shadow: 0 0 15px hsl(var(--primary) / 0.2), inset 0 0 15px hsl(var(--primary) / 0.1);
+    box-shadow: 0 0 20px hsl(var(--primary) / 0.15), inset 0 0 20px hsl(var(--primary) / 0.05);
   }
+  
   .glass-panel {
-    background: linear-gradient(135deg, hsl(var(--card) / 0.8), hsl(var(--card) / 0.6));
-    backdrop-filter: blur(10px);
-    border: 1px solid hsl(var(--border) / 0.5);
+    background: linear-gradient(165deg, hsl(var(--card) / 0.95), hsl(var(--card) / 0.8));
+    backdrop-filter: blur(12px);
+    border: 1px solid hsl(var(--border) / 0.6);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8);
+  }
+
+  /* Scanline animation */
+  .scanline {
+    width: 100%;
+    height: 100px;
+    z-index: 1002;
+    background: linear-gradient(
+      to bottom,
+      rgba(255,255,255,0) 0%,
+      rgba(255,255,255,0.03) 50%,
+      rgba(255,255,255,0) 100%
+    );
+    opacity: 0.1;
+    position: fixed;
+    bottom: 100%;
+    animation: scanline 8s linear infinite;
+    pointer-events: none;
   }
 }
