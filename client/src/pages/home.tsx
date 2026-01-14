@@ -7,6 +7,10 @@ import { AlertTriangle, RotateCcw } from "lucide-react";
 import { motion, AnimatePresence, useAnimation } from "framer-motion";
 import confetti from "canvas-confetti";
 
+const successAudio = new Audio("/sounds/success.wav");
+const failAudio = new Audio("/sounds/fail.wav");
+const explosionAudio = new Audio("/sounds/explosion.wav");
+
 export default function Home() {
   // -----------------------------
   // Core Game State
@@ -16,6 +20,8 @@ export default function Home() {
   const [comboMultiplier, setComboMultiplier] = useState(1);
   const [comboTimer, setComboTimer] = useState(0);
   const [isExploding, setIsExploding] = useState(false);
+  const [zonePopping, setZonePopping] = useState(false);
+  const [lastZone, setLastZone] = useState(getPressureZone());
   const [history, setHistory] = useState<{ id: number; action: string }[]>([]);
   const controls = useAnimation();
 
@@ -86,12 +92,26 @@ export default function Home() {
   }, [pressure]);
 
   const handleExplosion = () => {
+    explosionAudio.currentTime = 0;
+    explosionAudio.play();
+
     setIsExploding(true);
     setTimeout(() => setIsExploding(false), 2000);
     setPressure(0);
     setCombo(0);
     setComboMultiplier(1);
     setComboTimer(0);
+
+    useEffect(() => {
+      const currentZone = getPressureZone();
+
+      if (currentZone !== lastZone) {
+        setZonePopping(true);
+        setTimeout(() => setZonePopping(false), 200);
+        setLastZone(currentZone);
+      }
+    }, [pressure]);
+
 
     // Confetti effect
     const end = Date.now() + 2000;
@@ -122,6 +142,13 @@ export default function Home() {
     return "Red";
   };
 
+  const getZoneMultiplier = () => {
+    const zone = getPressureZone();
+    if (zone === "Green") return GREEN_MULTIPLIER;
+    if (zone === "Yellow") return YELLOW_MULTIPLIER;
+    return RED_MULTIPLIER;
+  };
+
   const getZoneColor = () => {
     const zone = getPressureZone();
     if (zone === "Green") return "bg-green-500";
@@ -139,6 +166,9 @@ export default function Home() {
   // -----------------------------
   // Game Actions
   const handleSuccess = () => {
+    successAudio.currentTime = 0;
+    successAudio.play();
+
     setComboTimer(0); // reset combo timer whenever the player scores
 
     const zone = getPressureZone();
@@ -167,6 +197,9 @@ export default function Home() {
   };
 
   const handleFail = () => {
+    failAudio.currentTime = 0;
+    failAudio.play();
+
     setCombo(0);
     setPressure((prev) => Math.max(prev - FAIL_PRESSURE_RELEASE, 0));
     addLog("PLAYER", "FAIL - PRESSURE RELEASED");
@@ -223,11 +256,23 @@ export default function Home() {
           style={{ width: `${(pressure / PRESSURE_MAX) * 100}%` }}
         />
 
-        {/* Combo & multiplier */}
-        <div className="text-white mt-2">
-          Combo: {combo} (x{(1 + combo * COMBO_MULTIPLIER_INCREMENT).toFixed(1)})
+        {/* Combo & Multiplier */}
+        <div className="mt-2 text-center">
+          <div className="combo-value text-glow-primary">
+            Combo {combo}
+          </div>
+          <div className="multiplier-value text-glow-secondary">
+            x{comboMultiplier.toFixed(1)}
+          </div>
+
         </div>
-        <div className="text-white mt-1 text-sm">Combo Timer: {comboTimer}s</div>
+
+        {/* Zone Multiplier */}
+        <div className={`mt-2 text-center zone-label ${zonePopping ? "zone-pop" : ""}`}>
+          Zone: {getPressureZone()} (x{getZoneMultiplier().toFixed(1)})
+        </div>
+
+
 
         {/* Action Buttons */}
         <div className="flex gap-4 mt-4">
@@ -241,6 +286,10 @@ export default function Home() {
           <Button onClick={handleReset} variant="outline">
             RESET
           </Button>
+        </div>
+
+        <div className="text-xs text-white/60 mt-2">
+          🔊 Sound effects enabled
         </div>
 
         {/* History Log */}
