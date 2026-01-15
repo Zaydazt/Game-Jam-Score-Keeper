@@ -15,7 +15,6 @@ const bgAudio = new Audio("/sounds/bg.wav");
 bgAudio.loop = true;
 bgAudio.volume = 0.2;
 
-
 export default function Home() {
   // -----------------------------
   // Helper Functions
@@ -39,7 +38,6 @@ export default function Home() {
   const [highScore, setHighScore] = useState(0);
   const controls = useAnimation();
   const [isMuted, setIsMuted] = useState(false);
-
 
   // -----------------------------
   // Tuning Constants
@@ -98,7 +96,6 @@ export default function Home() {
     };
   }, [isMuted]);
 
-
   // Combo timer effect
   useEffect(() => {
     if (combo === 0) {
@@ -146,7 +143,10 @@ export default function Home() {
   // -----------------------------
   // Game Actions
   const addLog = (player: string, action: string) => {
-    setHistory((prev) => [{ id: Date.now(), action: `${player}: ${action}` }, ...prev]);
+    setHistory((prev) => [
+      { id: Date.now(), action: `${player}: ${action}` },
+      ...prev,
+    ]);
   };
 
   const handleSuccess = () => {
@@ -169,7 +169,9 @@ export default function Home() {
     }
 
     setCombo((prev) => prev + 1);
-    setComboMultiplier((prev) => Math.min(prev + COMBO_MULTIPLIER_INCREMENT, 3));
+    setComboMultiplier((prev) =>
+      Math.min(prev + COMBO_MULTIPLIER_INCREMENT, 3),
+    );
 
     const totalScoreMultiplier = scoreMultiplier * comboMultiplier;
     setScore((prev) => {
@@ -178,9 +180,14 @@ export default function Home() {
       return newScore;
     });
 
-    setPressure((prev) => Math.min(prev + PRESSURE_GAIN * pressureMultiplier, PRESSURE_MAX));
+    setPressure((prev) =>
+      Math.min(prev + PRESSURE_GAIN * pressureMultiplier, PRESSURE_MAX),
+    );
 
-    addLog("PLAYER", `SUCCESS +${Math.round(BASE_POINTS * totalScoreMultiplier)} PTS`);
+    addLog(
+      "PLAYER",
+      `SUCCESS +${Math.round(BASE_POINTS * totalScoreMultiplier)} PTS`,
+    );
   };
 
   const handleFail = () => {
@@ -214,7 +221,8 @@ export default function Home() {
     setHistory([]);
   };
 
-  const isWarning = pressure >= WARNING_PRESSURE && pressure < CRITICAL_PRESSURE;
+  const isWarning =
+    pressure >= WARNING_PRESSURE && pressure < CRITICAL_PRESSURE;
   const isCritical = pressure >= CRITICAL_PRESSURE && pressure < PRESSURE_MAX;
 
   const handleExplosion = () => {
@@ -242,8 +250,6 @@ export default function Home() {
         gravity: 0.5,
       });
       if (Date.now() < end) requestAnimationFrame(frame);
-
-
     })();
   };
 
@@ -261,8 +267,14 @@ export default function Home() {
           >
             <div className="text-center p-8 bg-gray-800/80 rounded-2xl border-4 border-red-600">
               <AlertTriangle className="mx-auto mb-4 w-16 h-16 text-red-500 animate-bounce" />
-              <h2 className="text-4xl font-bold text-red-500 mb-2">AIR PRESSURE OVERLOAD!</h2>
-              <Button onClick={handleReset} variant="destructive" className="mt-4">
+              <h2 className="text-4xl font-bold text-red-500 mb-2">
+                AIR PRESSURE OVERLOAD!
+              </h2>
+              <Button
+                onClick={handleReset}
+                variant="destructive"
+                className="mt-4"
+              >
                 RESET SYSTEM
               </Button>
             </div>
@@ -270,11 +282,18 @@ export default function Home() {
         )}
       </AnimatePresence>
 
-      <motion.div animate={controls} className="w-full max-w-xl flex flex-col items-center gap-6">
+      <motion.div
+        animate={controls}
+        className="w-full max-w-xl flex flex-col items-center gap-6"
+      >
         {/* Score & High Score */}
         <div className="text-center">
-          <div className="text-3xl font-bold text-white">Score: {Math.round(score)}</div>
-          <div className="text-xl text-white/70">High Score: {Math.round(highScore)}</div>
+          <div className="text-3xl font-bold text-white">
+            Score: {Math.round(score)}
+          </div>
+          <div className="text-xl text-white/70">
+            High Score: {Math.round(highScore)}
+          </div>
         </div>
 
         <PressureGauge pressure={pressure} />
@@ -303,15 +322,14 @@ export default function Home() {
           </motion.div>
         )}
 
-
         {/* Pressure Bar */}
         <div
           className={`w-full h-6 rounded-full ${
             getPressureZone(pressure) === "Green"
               ? "bg-green-500"
               : getPressureZone(pressure) === "Yellow"
-              ? "bg-yellow-500"
-              : "bg-red-500"
+                ? "bg-yellow-500"
+                : "bg-red-500"
           } transition-all`}
           style={{ width: `${(pressure / PRESSURE_MAX) * 100}%` }}
         />
@@ -341,8 +359,8 @@ export default function Home() {
                   comboTimer < COMBO_MAX_TIME * 0.3
                     ? "bg-red-500"
                     : comboTimer < COMBO_MAX_TIME * 0.6
-                    ? "bg-yellow-400"
-                    : "bg-green-500"
+                      ? "bg-yellow-400"
+                      : "bg-green-500"
                 }`}
                 style={{
                   width: `${((COMBO_MAX_TIME - comboTimer) / COMBO_MAX_TIME) * 100}%`,
@@ -361,15 +379,18 @@ export default function Home() {
           animate={{
             scale: getPressureZone(pressure) !== "Green" ? [1, 1.1, 1] : 1,
           }}
-          transition={{ duration: 0.5, repeat: getPressureZone(pressure) !== "Green" ? Infinity : 0 }}
+          transition={{
+            duration: 0.5,
+            repeat: getPressureZone(pressure) !== "Green" ? Infinity : 0,
+          }}
         >
           <div className="text-2xl font-bold text-white">
             Zone: {getPressureZone(pressure)} (
             {getPressureZone(pressure) === "Green"
               ? GREEN_MULTIPLIER.toFixed(1)
               : getPressureZone(pressure) === "Yellow"
-              ? YELLOW_MULTIPLIER.toFixed(1)
-              : RED_MULTIPLIER.toFixed(1)}
+                ? YELLOW_MULTIPLIER.toFixed(1)
+                : RED_MULTIPLIER.toFixed(1)}
             )
           </div>
         </motion.div>
@@ -388,13 +409,9 @@ export default function Home() {
           </Button>
         </div>
 
-        <Button
-          variant="secondary"
-          onClick={() => setIsMuted((prev) => !prev)}
-        >
+        <Button variant="secondary" onClick={() => setIsMuted((prev) => !prev)}>
           {isMuted ? "🔇 Muted" : "🔊 Sound On"}
         </Button>
-
 
         {/* History Log */}
         <div className="w-full max-h-60 overflow-y-auto mt-4">
