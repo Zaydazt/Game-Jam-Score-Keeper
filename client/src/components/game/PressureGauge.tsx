@@ -6,7 +6,7 @@ interface PressureGaugeProps {
 
 export function PressureGauge({ pressure }: PressureGaugeProps) {
   const percentage = Math.min(100, Math.max(0, pressure));
-  
+
   // Color based on pressure
   const getColor = () => {
     if (percentage < 30) return "hsl(var(--primary))";
@@ -18,11 +18,14 @@ export function PressureGauge({ pressure }: PressureGaugeProps) {
   const strokeWidth = 12;
   const normalizedRadius = radius - strokeWidth / 2;
   const circumference = normalizedRadius * 2 * Math.PI;
-  // We only want a semi-circle (180 degrees) or a bit more (240 degrees)
+
+  // Semi-circle gauge (240 degrees)
   const arcLength = 240; // degrees
   const arcFraction = arcLength / 360;
-  const totalDashArray = circumference;
-  const strokeDashoffset = circumference - (percentage / 100) * (circumference * arcFraction);
+
+  // Correct strokeDashoffset to start at -210deg (top-left-ish)
+  const dashArray = circumference * arcFraction;
+  const dashOffset = dashArray * (1 - percentage / 100);
 
   return (
     <div className="relative flex flex-col items-center justify-center glass-panel p-6 rounded-2xl border-white/5 bg-black/40 box-glow overflow-hidden h-full">
@@ -37,39 +40,39 @@ export function PressureGauge({ pressure }: PressureGaugeProps) {
           height="192"
           width="192"
           viewBox="0 0 192 192"
-          className="transform -rotate-[210deg]"
         >
-          {/* Background Track */}
-          <circle
-            stroke="hsl(var(--muted) / 0.3)"
-            fill="transparent"
-            strokeWidth={strokeWidth}
-            strokeDasharray={`${circumference * arcFraction} ${circumference}`}
-            strokeLinecap="round"
-            r={normalizedRadius}
-            cx="96"
-            cy="96"
-          />
-          {/* Progress Bar */}
-          <motion.circle
-            stroke={getColor()}
-            fill="transparent"
-            strokeWidth={strokeWidth}
-            strokeDasharray={`${circumference * arcFraction} ${circumference}`}
-            strokeLinecap="round"
-            animate={{ 
-              strokeDashoffset: circumference - (percentage / 100) * (circumference * arcFraction),
-              stroke: getColor()
-            }}
-            transition={{ type: "spring", stiffness: 50, damping: 15 }}
-            r={normalizedRadius}
-            cx="96"
-            cy="96"
-            style={{ 
-              filter: `drop-shadow(0 0 8px ${getColor()}66)`
-            }}
-          />
-          
+          {/* Rotate the group so -210° matches the start */}
+          <g transform="rotate(-210 96 96)">
+            {/* Background Track */}
+            <circle
+              stroke="hsl(var(--muted) / 0.3)"
+              fill="transparent"
+              strokeWidth={strokeWidth}
+              strokeDasharray={`${dashArray} ${circumference}`}
+              strokeLinecap="round"
+              r={normalizedRadius}
+              cx="96"
+              cy="96"
+            />
+            {/* Progress Bar */}
+            <motion.circle
+              stroke={getColor()}
+              fill="transparent"
+              strokeWidth={strokeWidth}
+              strokeDasharray={`${dashArray} ${circumference}`}
+              strokeLinecap="round"
+              animate={{
+                strokeDashoffset: dashOffset,
+                stroke: getColor(),
+              }}
+              transition={{ type: "spring", stiffness: 80, damping: 20 }}
+              r={normalizedRadius}
+              cx="96"
+              cy="96"
+              style={{ filter: `drop-shadow(0 0 8px ${getColor()}66)` }}
+            />
+          </g>
+
           {/* Tick Marks */}
           {[...Array(9)].map((_, i) => {
             const angle = (i * (arcLength / 8)) - 30; // -30 to 210
@@ -94,7 +97,7 @@ export function PressureGauge({ pressure }: PressureGaugeProps) {
 
         {/* Center Display */}
         <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <motion.span 
+          <motion.span
             key={Math.round(percentage)}
             initial={{ scale: 1.2, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
@@ -120,7 +123,7 @@ export function PressureGauge({ pressure }: PressureGaugeProps) {
           <span className="text-white text-xs font-bold">{(percentage * 0.42).toFixed(1)} G</span>
         </div>
       </div>
-      
+
       {percentage >= 90 && (
         <motion.div 
           animate={{ opacity: [1, 0.4, 1] }}
@@ -131,3 +134,4 @@ export function PressureGauge({ pressure }: PressureGaugeProps) {
     </div>
   );
 }
+
